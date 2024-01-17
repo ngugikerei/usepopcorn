@@ -1,8 +1,5 @@
 import { useEffect, useState } from 'react';
-
-const tempMovieData = [];
-
-const tempWatchedData = [];
+import StarRating from './StarRating';
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -11,7 +8,7 @@ export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState('panda');
   const [error, setError] = useState('');
   const [selectedMovieID, setSelectedMovieID] = useState(null);
 
@@ -25,6 +22,7 @@ export default function App() {
     setSelectedMovieID(null);
   }
 
+  //Data Fetching from API, Synced with query state variable
   useEffect(
     function () {
       async function fetchMovies() {
@@ -136,6 +134,74 @@ function MovieList({ movieArray, OnHandleSelectedMovie }) {
   );
 }
 
+function MovieDetails({ movieID, OnCloseMovieDetails }) {
+  const [movie, setMovie] = useState({});
+
+  const {
+    Title: title,
+    Year: year,
+    Plot: plot,
+    Poster: poster,
+    Runtime: runtime,
+    imdbRating,
+    Director: director,
+    Released: released,
+    Actors: actors,
+    Genre: genre,
+  } = movie;
+
+  console.log(title, year);
+  //fetch movie details from api, using passed movieID
+  useEffect(
+    function () {
+      async function fetchSelectedMovieDetails() {
+        const response = await fetch(
+          `https://www.omdbapi.com/?apikey=30d1424c&i=${movieID}`
+        );
+
+        const data = await response.json();
+        setMovie(data);
+        //console.log(movie);
+      }
+      fetchSelectedMovieDetails();
+    },
+    [movieID]
+  );
+
+  return (
+    <div className="details">
+      <header>
+        <button className="btn-back" onClick={OnCloseMovieDetails}>
+          &larr;
+        </button>
+        <img src={poster} alt={title} />
+        <div className="details-overview ">
+          <h2>{title}</h2>
+          <p>
+            {released} &bull; {runtime}
+          </p>
+          <p>{genre}</p>
+          <p>
+            <span>⭐</span> {imdbRating} IMdb Rating
+          </p>
+        </div>
+      </header>
+
+      <section>
+        <div className="rating">
+          {' '}
+          <StarRating maxRating={10} size={24} />
+        </div>
+        <p>
+          <em>{plot}</em>
+        </p>
+        <p>Starring: {actors}</p>
+        <p>Directed by {director}</p>
+      </section>
+    </div>
+  );
+}
+
 function Navbar({ children }) {
   return (
     <nav className="nav-bar">
@@ -185,17 +251,6 @@ function Movie({ movie, OnHandleSelectedMovie }) {
         </p>
       </div>
     </li>
-  );
-}
-
-function MovieDetails({ movieID, OnCloseMovieDetails }) {
-  return (
-    <div className="details">
-      <button className="btn-back" onClick={OnCloseMovieDetails}>
-        &larr;
-      </button>
-      {movieID}
-    </div>
   );
 }
 

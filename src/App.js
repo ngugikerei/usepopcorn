@@ -8,7 +8,7 @@ export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [query, setQuery] = useState('panda');
+  const [query, setQuery] = useState('');
   const [error, setError] = useState('');
   const [selectedMovieID, setSelectedMovieID] = useState(null);
 
@@ -35,11 +35,15 @@ export default function App() {
   //Data Fetching from API, Synced with query state variable
   useEffect(
     function () {
+      const controller = new AbortController();
+      const signal = controller.signal;
       async function fetchMovies() {
         try {
           setIsLoading(true);
+          setError('');
           const response = await fetch(
-            `http://www.omdbapi.com/?apikey=${apiKey}&s=${query}`
+            `http://www.omdbapi.com/?apikey=${apiKey}&s=${query}`,
+            { signal }
           );
 
           if (!response.ok) {
@@ -56,7 +60,9 @@ export default function App() {
 
           setIsLoading(false);
         } catch (err) {
-          setError(err.message);
+          if (err.name !== 'AbortError') {
+            setError(err.message);
+          }
         } finally {
           setIsLoading(false);
         }
@@ -67,7 +73,12 @@ export default function App() {
         setError('');
         return;
       }
+      handleCloseMoviesDetails();
       fetchMovies();
+
+      return function () {
+        controller.abort();
+      };
     },
     [query]
   );
@@ -217,6 +228,35 @@ function MovieDetails({
       fetchSelectedMovieDetails();
     },
     [movieID]
+  );
+  //Effect for changing page title according to selected movie
+  useEffect(
+    function () {
+      if (!title) return;
+      document.title = `Movie | ${title}`;
+      //cleanup function when MovieDetails component is unmounted
+      return function () {
+        document.title = 'usePopcorn';
+      };
+    },
+    [title]
+  );
+
+  //listening to the press event for Escape key ----closing down movie details, and cleaning up the event
+  useEffect(
+    function () {
+      function callback(e) {
+        if (e.code === 'Escape') {
+          OnCloseMovieDetails();
+        }
+      }
+      document.addEventListener('keydown', callback);
+
+      return function () {
+        document.removeEventListener('keydown', callback);
+      };
+    },
+    [OnCloseMovieDetails]
   );
 
   return (

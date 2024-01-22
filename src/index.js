@@ -6,21 +6,6 @@ import App from './App';
 
 import StarRating from './StarRating';
 
-function Test() {
-  const [movieRating, setMovieRating] = useState(0);
-  return (
-    <>
-      <StarRating
-        maxRating={5}
-        messages={['Terrible', 'Okay', 'Great', 'Amazing', 'Excellent']}
-        defaultRating={3}
-        onSetMovieRating={setMovieRating}
-      />
-      <p> This movie was rated {movieRating} stars</p>
-    </>
-  );
-}
-
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>

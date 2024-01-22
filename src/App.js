@@ -26,6 +26,12 @@ export default function App() {
     setWatched((watched) => [...watched, watchedMovie]);
   }
 
+  //Delete selected movie from watched movies list using passed imDB id
+  function handleDeleteWatchedMovie(id) {
+    console.log('deletedmovie');
+    setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
+  }
+
   //Data Fetching from API, Synced with query state variable
   useEffect(
     function () {
@@ -89,7 +95,10 @@ export default function App() {
           {!selectedMovieID ? (
             <>
               <WatchedSummary watched={watched} />
-              <WatchedMovies watched={watched} />
+              <WatchedMovies
+                watched={watched}
+                handleDeleteWatchedMovie={handleDeleteWatchedMovie}
+              />
             </>
           ) : (
             <MovieDetails
@@ -151,7 +160,15 @@ function MovieDetails({
   const [movie, setMovie] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [userRating, setUserRating] = useState('');
+
+  //Check whether watched selected movie is in list using movieID
   const isWatched = watched.map((movie) => movie.imdbID).includes(movieID);
+
+  //use Find() array method to get user rating from watched movies array
+
+  const watchedUserRating = watched.find(
+    (movie) => movie.imdbID === movieID
+  )?.userRating;
 
   //Destructure movie object..result of API call
   const {
@@ -167,6 +184,7 @@ function MovieDetails({
     Genre: genre,
   } = movie;
 
+  //Adding selected movie to watched movies list
   function handleAdd() {
     const newWatchedMovie = {
       imdbID: movieID,
@@ -240,7 +258,10 @@ function MovieDetails({
                   )}
                 </>
               ) : (
-                <p>You've rated this movie with X stars</p>
+                <p>
+                  You've rated this movie with {watchedUserRating}
+                  <span>🌟</span>
+                </p>
               )}
             </div>
 
@@ -343,7 +364,7 @@ function WatchedSummary({ watched }) {
   );
 }
 
-function WatchedMovies({ watched }) {
+function WatchedMovies({ watched, handleDeleteWatchedMovie }) {
   return (
     <ul className="list">
       {watched.map((movie) => (
@@ -363,6 +384,12 @@ function WatchedMovies({ watched }) {
               <span>⏳</span>
               <span>{movie.runtime} min</span>
             </p>
+            <button
+              className="btn-delete"
+              onClick={() => handleDeleteWatchedMovie(movie.imdbID)}
+            >
+              ❌
+            </button>
           </div>
         </li>
       ))}

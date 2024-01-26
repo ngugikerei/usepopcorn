@@ -6,7 +6,10 @@ const average = (arr) =>
 
 export default function App() {
   const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
+  const [watched, setWatched] = useState(function () {
+    const storedData = localStorage.getItem('watched');
+    return JSON.parse(storedData);
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [query, setQuery] = useState('');
   const [error, setError] = useState('');
@@ -22,8 +25,10 @@ export default function App() {
     setSelectedMovieID(null);
   }
 
+  //Add watched movies to list
   function handleAddToWatchedMovies(watchedMovie) {
     setWatched((watched) => [...watched, watchedMovie]);
+    //localStorage.setItem('watched', JSON.stringify([...watched, watchedMovie]));
   }
 
   //Delete selected movie from watched movies list using passed imDB id
@@ -31,6 +36,14 @@ export default function App() {
     console.log('deletedmovie');
     setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
   }
+
+  //Storing Data in Local Storgage, using JSON Stringfy to store data as a string
+  useEffect(
+    function () {
+      localStorage.setItem('watched', JSON.stringify(watched));
+    },
+    [watched]
+  );
 
   //Data Fetching from API, Synced with query state variable
   useEffect(

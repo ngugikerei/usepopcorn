@@ -185,6 +185,8 @@ function MovieDetails({
   const [isLoading, setIsLoading] = useState(false);
   const [userRating, setUserRating] = useState('');
 
+  const countRef = useRef(0);
+
   //Check whether watched selected movie is in list using movieID
   const isWatched = watched.map((movie) => movie.imdbID).includes(movieID);
 
@@ -218,12 +220,24 @@ function MovieDetails({
       imdbRating: Number(imdbRating),
       runtime: Number(runtime.split(' ').at(0)),
       userRating,
+      countRatingDecisions: countRef,
     };
 
     handleAddToWatchedMovies(newWatchedMovie);
 
     OnCloseMovieDetails();
   }
+
+  //Check how many times user has rated the movie before adding to list
+  useEffect(
+    function () {
+      if (userRating) {
+        countRef.current = countRef.current + 1;
+      }
+      console.log(countRef.current);
+    },
+    [userRating]
+  );
 
   //fetch movie details from api, using passed movieID and use SetMovie method, to set state
   useEffect(
@@ -411,7 +425,7 @@ function WatchedSummary({ watched }) {
     watched.map((movie) => movie.userRating)
   ).toFixed(1);
 
-  const avgRuntime = average(watched.map((movie) => movie.runtime));
+  const avgRuntime = average(watched.map((movie) => movie.runtime)).toFixed(0);
 
   return (
     <div className="summary">

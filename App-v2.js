@@ -1,24 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
 import StarRating from './StarRating';
-import { useMovies } from './useMovies';
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
 export default function App() {
+  const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState(function () {
     const storedData = localStorage.getItem('watched');
     return JSON.parse(storedData);
   });
-
+  const [isLoading, setIsLoading] = useState(false);
   const [query, setQuery] = useState('');
+  const [error, setError] = useState('');
   const [selectedMovieID, setSelectedMovieID] = useState(null);
 
-  //Data Fetching from API, Synced with query state variable
-  const { movies, isLoading, error } = useMovies(
-    query,
-    handleCloseMoviesDetails
-  );
+  const apiKey = '30d1424c';
 
   function handleSelectedMovie(id) {
     setSelectedMovieID((sel) => (sel === id ? null : id));
@@ -45,6 +42,57 @@ export default function App() {
       localStorage.setItem('watched', JSON.stringify(watched));
     },
     [watched]
+  );
+
+  //Data Fetching from API, Synced with query state variable
+  useEffect(
+    function () {
+      const controller = new AbortController();
+      const signal = controller.signal;
+      async function fetchMovies() {
+        try {
+          setIsLoading(true);
+          setError('');
+          const response = await fetch(
+            `http://www.omdbapi.com/?apikey=${apiKey}&s=${query}`,
+            { signal }
+          );
+
+          if (!response.ok) {
+            throw new Error('Something went wrong while fetching movies');
+          }
+
+          const data = await response.json();
+
+          if (data.Response === 'False') {
+            throw new Error('Movie not available');
+          }
+
+          setMovies(data.Search);
+
+          setIsLoading(false);
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            setError(err.message);
+          }
+        } finally {
+          setIsLoading(false);
+        }
+      }
+
+      if (query.length < 4) {
+        setMovies([]);
+        setError('');
+        return;
+      }
+      handleCloseMoviesDetails();
+      fetchMovies();
+
+      return function () {
+        controller.abort();
+      };
+    },
+    [query]
   );
 
   return (
@@ -80,7 +128,7 @@ export default function App() {
               movieID={selectedMovieID}
               OnCloseMovieDetails={handleCloseMoviesDetails}
               isLoading={isLoading}
-              // setIsLoading={setIsLoading}
+              setIsLoading={setIsLoading}
               handleAddToWatchedMovies={handleAddToWatchedMovies}
               watched={watched}
             />
@@ -185,6 +233,7 @@ function MovieDetails({
       if (userRating) {
         countRef.current = countRef.current + 1;
       }
+      console.log(countRef.current);
     },
     [userRating]
   );

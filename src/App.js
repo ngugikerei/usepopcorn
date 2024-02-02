@@ -1,18 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
-import { useMovies } from './useMovies';
 
+//Custom Hooks
+import { useMovies } from './useMovies';
+import { useLocalStorageState } from './useLocalStorageState';
+
+//Render Logic Components
 import { MovieDetails } from './MovieDetails';
 import { Loading } from './Loading';
 import { Navbar } from './Navbar';
 import { MovieList } from './MovieList';
 import { WatchedSummary } from './WatchedSummary';
+import { WatchedMovies } from './WatchedMovies';
+import { SearchBar } from './SearchBar';
 import { Box } from './Box';
 
 export default function App() {
-  const [watched, setWatched] = useState(function () {
-    const storedData = localStorage.getItem('watched');
-    return JSON.parse(storedData);
-  });
+  // const [watched, setWatched] = useState(function () {
+  //   const storedData = localStorage.getItem('watched');
+  //   return JSON.parse(storedData);
+  // });
+
+  const [watched, setWatched] = useLocalStorageState([], 'watched');
 
   const [query, setQuery] = useState('');
   const [selectedMovieID, setSelectedMovieID] = useState(null);
@@ -96,77 +104,11 @@ function Main({ children }) {
   return <main className="main">{children}</main>;
 }
 
-function SearchBar({ query, setQuery }) {
-  const inputEl = useRef(null);
-
-  //Focus cursor on search element when Enter key is presed
-  useEffect(
-    function () {
-      function callback(e) {
-        if (document.activeElement === inputEl.current) return;
-        if (e.code === 'Enter') {
-          inputEl.current.focus();
-          setQuery('');
-        }
-      }
-
-      document.addEventListener('keydown', callback);
-
-      return () => document.addEventListener('keydown', callback);
-    },
-    [setQuery]
-  );
-
-  return (
-    <input
-      className="search"
-      type="text"
-      placeholder="Search movies..."
-      value={query}
-      onChange={(e) => setQuery(e.target.value)}
-      ref={inputEl}
-    />
-  );
-}
-
 function NumResults({ movieArray }) {
   return (
     <p className="num-results">
       Found <strong>{movieArray.length}</strong> results
     </p>
-  );
-}
-
-function WatchedMovies({ watched, handleDeleteWatchedMovie }) {
-  return (
-    <ul className="list">
-      {watched.map((movie) => (
-        <li key={movie.imdbID}>
-          <img src={movie.poster} alt={`${movie.title} poster`} />
-          <h3>{movie.title}</h3>
-          <div>
-            <p>
-              <span>⭐️</span>
-              <span>{movie.imdbRating}</span>
-            </p>
-            <p>
-              <span>🌟</span>
-              <span>{movie.userRating}</span>
-            </p>
-            <p>
-              <span>⏳</span>
-              <span>{movie.runtime} min</span>
-            </p>
-            <button
-              className="btn-delete"
-              onClick={() => handleDeleteWatchedMovie(movie.imdbID)}
-            >
-              ❌
-            </button>
-          </div>
-        </li>
-      ))}
-    </ul>
   );
 }
 

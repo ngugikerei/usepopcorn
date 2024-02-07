@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import StarRating from './StarRating';
 import { Loading } from './Loading';
+import { useKey } from './useKey';
 
 export function MovieDetails({
   movieID,
@@ -96,21 +97,23 @@ export function MovieDetails({
   );
 
   //listening to the press event for Escape key ----closing down movie details, and cleaning up the event
-  useEffect(
-    function () {
-      function callback(e) {
-        if (e.code === 'Escape') {
-          OnCloseMovieDetails();
-        }
-      }
-      document.addEventListener('keydown', callback);
+  // useEffect(
+  //   function () {
+  //     function callback(e) {
+  //       if (e.code === 'Escape') {
+  //         OnCloseMovieDetails();
+  //       }
+  //     }
+  //     document.addEventListener('keydown', callback);
 
-      return function () {
-        document.removeEventListener('keydown', callback);
-      };
-    },
-    [OnCloseMovieDetails]
-  );
+  //     return function () {
+  //       document.removeEventListener('keydown', callback);
+  //     };
+  //   },
+  //   [OnCloseMovieDetails]
+  // );
+
+  useKey('Escape', OnCloseMovieDetails);
 
   return (
     <div className="details">

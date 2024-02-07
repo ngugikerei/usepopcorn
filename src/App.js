@@ -50,12 +50,12 @@ export default function App() {
   }
 
   //Storing Data in Local Storgage, using JSON Stringfy to store data as a string
-  useEffect(
-    function () {
-      localStorage.setItem('watched', JSON.stringify(watched));
-    },
-    [watched]
-  );
+  // useEffect(
+  //   function () {
+  //     localStorage.setItem('watched', JSON.stringify(watched));
+  //   },
+  //   [watched]
+  // );
 
   return (
     <>
